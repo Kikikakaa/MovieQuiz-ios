@@ -3,10 +3,26 @@ import Foundation
 
 final class MovieQuizViewController: UIViewController {
     
+    @IBOutlet private weak var counterLabel: UILabel!
+    @IBOutlet private weak var textLabel: UILabel!
+    @IBOutlet private weak var imageView: UIImageView!
+    
     struct QuizQuestion {
         let image: String
         let text: String
         let correctAnswer: Bool
+    }
+    
+    struct QuizResultsViewModel {
+        let title: String
+        let text: String
+        let buttonText: String
+    }
+    
+    struct QuizStepViewModel {
+        let image: UIImage
+        let question: String
+        let questionNumber: String
     }
     
     private let questions: [QuizQuestion] = [
@@ -22,28 +38,18 @@ final class MovieQuizViewController: UIViewController {
         QuizQuestion(image: "Vivarium", text: "Рейтинг этого фильма больше чем 6?", correctAnswer: false)
     ]
     
-    @IBOutlet private weak var counterLabel: UILabel!
-    @IBOutlet private weak var textLabel: UILabel!
-    @IBOutlet private weak var imageView: UIImageView!
-    
-    @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        let currentQuestion = questions[currentQuestionIndex]
-        let givenAnswer = true
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-    }
-    @IBAction private func noButtonClicked(_ sender: UIButton) {
-        let currentQuestion = questions[currentQuestionIndex]
-        let givenAnswer = false
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-    }
-    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
-    struct QuizStepViewModel {
-        let image: UIImage
-        let question: String
-        let questionNumber: String
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let firstQuestion = self.questions[self.currentQuestionIndex]
+        let viewModel = self.convert(model: firstQuestion)
+        self.show(quiz: viewModel)
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
@@ -55,14 +61,9 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func show(quiz step: QuizStepViewModel) {
-        counterLabel.text = step.questionNumber
-        textLabel.text = step.question
         imageView.image = step.image
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // show(quiz: )
+        textLabel.text = step.question
+        counterLabel.text = step.questionNumber
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -73,6 +74,7 @@ final class MovieQuizViewController: UIViewController {
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreenColor.cgColor : UIColor.ypRedColor.cgColor
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.imageView.layer.borderWidth = 0
             self.showNextQuestionOrResults()
         }
     }
@@ -112,13 +114,6 @@ final class MovieQuizViewController: UIViewController {
             show(quiz: viewModel)
         }
         
-
-    }
-    
-    struct QuizResultsViewModel {
-        let title: String
-        let text: String
-        let buttonText: String
     }
     
     private func show(quiz result: QuizResultsViewModel) {
@@ -141,5 +136,22 @@ final class MovieQuizViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
-    
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        sender.isEnabled = false
+        let currentQuestion = questions[currentQuestionIndex]
+        let givenAnswer = true
+        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) {
+            sender.isEnabled = true
+        }
+    }
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        sender.isEnabled = false
+        let currentQuestion = questions[currentQuestionIndex]
+        let givenAnswer = false
+        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) {
+            sender.isEnabled = true
+        }
+    }
 }
