@@ -83,7 +83,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     func proceedToNextQuestionOrResults() {
-        if self.isLastQuestion() {
+        if isLastQuestion() {
             let text = "Ваш результат: \(correctAnswers)/10"
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
